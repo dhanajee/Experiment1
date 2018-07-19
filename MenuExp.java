@@ -17,7 +17,7 @@ public JFileChooser fc;
 
     public MenuExp() {
          
-        setTitle("Menu Example");
+        setTitle("MyNotepad");
         setSize(500, 500);
 
 	JTextArea TextArea = new JTextArea();
