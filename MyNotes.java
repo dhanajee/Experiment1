@@ -16,12 +16,7 @@ import javax.swing.event.UndoableEditEvent;
 import javax.swing.event.UndoableEditListener;
 import javax.swing.undo.CannotRedoException;
 import javax.swing.undo.UndoManager;
- 
-public class MyNotes extends JFrame {
-public JFileChooser fc;
-public JFontChooser jfonchoo;
-public String currentfile="";
-public UndoManager undo;
+
 
 /**
  * This is an open source code to create a notepad similar application which will 
@@ -44,6 +39,14 @@ public UndoManager undo;
  * a new version can thus be uploaded.
   */
 
+public class MyNotes extends JFrame {
+public JFileChooser fc;
+public JFontChooser jfonchoo;
+public String currentfile="";
+public UndoManager undo;
+
+
+
 
     public MyNotes() {
         fc=new JFileChooser();
@@ -54,7 +57,7 @@ public UndoManager undo;
 
         JTextArea TextArea = new JTextArea();
         TextArea.setSize(500,500);   
-        TextArea.setBounds(10,15,500,500);
+        TextArea.setBounds(10,15,300,400);
 
         JScrollPane scroll = new JScrollPane (TextArea);
         scroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
@@ -110,11 +113,19 @@ public UndoManager undo;
         JMenuItem aboutAction = new JMenuItem("About");
 
          
-        
+        // Create and add CheckButton as a menu item to one of the drop down
+        // menu
+        JCheckBoxMenuItem checkAction = new JCheckBoxMenuItem("Check Action");
+
+        ButtonGroup bg = new ButtonGroup();
+        bg.add(radioAction1);
+        bg.add(radioAction2);
+
         fileMenu.add(newAction);
         fileMenu.add(openAction);
         fileMenu.add(saveAction);
         fileMenu.add(saveasAction);
+        fileMenu.add(checkAction);
         fileMenu.add(newAction);
 
         fileMenu.addSeparator();
@@ -129,6 +140,9 @@ public UndoManager undo;
         editMenu.add(selectallAction);
 
         editMenu.addSeparator();
+
+        editMenu.add(radioAction1);
+        editMenu.add(radioAction2);
 
         formatMenu.add(fontAction);
 
@@ -158,9 +172,94 @@ public UndoManager undo;
     
     });
 
+// Added by Nowmish
+    openAction.addActionListener(new ActionListener() {
+
+    public void actionPerformed(ActionEvent arg0){
+
+        //Handle open button action.
+        if (arg0.getSource() == openAction) {
+            int returnVal = fc.showOpenDialog(MyNotes.this);
+            String textfromfile="";
+
+            if (returnVal == JFileChooser.APPROVE_OPTION) {
+                File file = fc.getSelectedFile();
+                System.out.println("getCurrentDirectory(): " + fc.getCurrentDirectory());
+                System.out.println("getSelectedFile() : " + fc.getSelectedFile());      
+
+                try{
+                    FileInputStream fin=new FileInputStream(fc.getSelectedFile());
+                    BufferedInputStream bin=new BufferedInputStream(fin);
+                    int i;
+                    while((i=bin.read())!=-1){
+                        //System.out.print((char)i);
+                        String temp = String.valueOf((char) i);
+                        textfromfile = textfromfile + temp;
+                    }
+                    bin.close();
+                    fin.close();
+                    }catch(Exception e){System.out.println(e);}
+
+                    System.out.println(textfromfile);
+                    TextArea.setText(textfromfile);
+                    currentfile=fc.getSelectedFile().toString();
+                
+            }
+        }
+    }
+});
+
+
+    saveAction.addActionListener(new ActionListener() {
+
+    public void actionPerformed(ActionEvent arg0) 
+        {
+            try{
+                FileOutputStream fout=new FileOutputStream(currentfile);
+            
+                BufferedOutputStream bout=new BufferedOutputStream(fout);
+                String s=TextArea.getText();
+                byte b[]=s.getBytes();
+                bout.write(b);
+                bout.flush();
+                bout.close();
+                fout.close();
+            }
+                catch(Exception e){System.out.println("success");}
+        }
     
+    });
 
 
+    saveasAction.addActionListener(new ActionListener() {
+
+    public void actionPerformed(ActionEvent arg0){
+
+        fc.setDialogTitle("Specify a file to save");   
+ 
+        int userSelection = fc.showSaveDialog(MyNotes.this);
+ 
+        if (userSelection == JFileChooser.APPROVE_OPTION) {
+        File fileToSave = fc.getSelectedFile();
+        System.out.println("Save as file: " + fileToSave.getAbsolutePath());
+
+        try{
+              FileOutputStream fout=new FileOutputStream(fileToSave);
+            
+        BufferedOutputStream bout=new BufferedOutputStream(fout);
+        String s=TextArea.getText();
+        byte b[]=s.getBytes();
+        bout.write(b);
+        bout.flush();
+        bout.close();
+        fout.close();
+            }
+        catch(Exception e){System.out.println("success");}
+    }
+}
+});
+
+// End added by Nowmish
     cutAction.addActionListener(new ActionListener() {
 
     public void actionPerformed(ActionEvent arg0) 
@@ -201,9 +300,35 @@ public UndoManager undo;
         }
     });
 
-   
-   
+    findAction.addActionListener(new ActionListener() {
+
+    public void actionPerformed(ActionEvent arg0) 
+        {
+            if (arg0.getSource()==find) {
+                FindWindow f = new FindWindow(this);
+                String findText = f.getFindText();
+                if (findText!="") { try {
+                fo = new FindOption(findText, pane);
+                }
+                catch (NotFoundException ex) {
+                    JOptionPane.showMessageDialog(null, ex.toString());
+                }
+                }
+            }
+        }
     
+    });
+
+   
+    selectallAction.addActionListener(new ActionListener() {
+
+    public void actionPerformed(ActionEvent arg0) 
+        {
+            pane.selectall();
+        }               
+
+    });
+
     fontAction.addActionListener(new ActionListener() {
 
     public void actionPerformed(ActionEvent arg0)
